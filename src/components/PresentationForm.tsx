@@ -2,11 +2,13 @@ import { useState } from "react";
 import React from "react";
 import { Button, Form } from "react-bootstrap";
 
+
+
 const PresentationForm: React.FC = () => {
   const [presentation, setPresentation] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
+    title: "",
+    authors: "",
+    slides: "",
   });
   const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -25,31 +27,31 @@ const PresentationForm: React.FC = () => {
   return (
     <Form onSubmit={handleOnSubmit} className="contact-form">
       <Form.Group controlId="firstName">
-        <Form.Label>First Name</Form.Label>
+        <Form.Label>Title</Form.Label>
         <Form.Control
           className="firstName"
           name="firstName"
-          value={presentation.firstName}
+          value={presentation.title}
           type="text"
           onChange={handleOnChange}
         />
       </Form.Group>
       <Form.Group controlId="lastName">
-        <Form.Label>Last Name</Form.Label>
+        <Form.Label>Authors</Form.Label>
         <Form.Control
           className="lastName"
           name="lastName"
-          value={presentation.lastName}
+          value={presentation.authors}
           type="text"
           onChange={handleOnChange}
         />
       </Form.Group>
       <Form.Group controlId="phone">
-        <Form.Label>Phone</Form.Label>
+        <Form.Label>Slides</Form.Label>
         <Form.Control
           className="phone"
           name="phone"
-          value={presentation.phone}
+          value={presentation.slides}
           type="number"
           onChange={handleOnChange}
         />

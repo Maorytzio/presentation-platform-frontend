@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "./components/Header";
 import { useNavigate } from "react-router-dom";
+import PresentationForm from "./components/PresentationForm";
+import { Button } from 'primereact/button';
 
 // Define interfaces for the data structure
 interface Slide {
@@ -19,32 +21,46 @@ function App() {
   const [presentations, setPresentations] = useState<Presentation[]>([]);
   const navigate = useNavigate();
 
-  const fetchPresentations = async () => {
-    try {
-      const response = await axios.get<Presentation[]>(
-        "http://localhost:3000/presentations"
-      );
-      console.log(response.data);
-      setPresentations(response.data);
-    } catch (error) {
-      console.error("Error fetching presentations:", error);
-    }
-  };
+  useEffect(() => {
+    const fetchPresentations = async () => {
+      try {
+        const response = await axios.get<Presentation[]>(
+          "http://localhost:3000/presentations"
+        );
+        console.log(response.data);
+        setPresentations(response.data);
+      } catch (error) {
+        console.error("Error fetching presentations:", error);
+      }
+    };
+
+    (async () => await fetchPresentations())();
+  });
 
   const handlePresentationClick = (title: string) => {
     navigate(`/presentation/${title}`);
   };
+          
+
   return (
     <div className="App">
       <Header />
-      <button onClick={fetchPresentations}>Fetch Presentations</button>
+      <Button>sadf</Button>
+      {/* <button onClick={fetchPresentations}>Fetch Presentations</button> */}
       <ul>
         {presentations.map((presentation) => (
-          <li  key={presentation.title} onClick={() => handlePresentationClick(presentation.title)}>
+          <li
+            key={presentation.title}
+            onClick={() => handlePresentationClick(presentation.title)}
+          >
             {presentation.title}
           </li>
         ))}
       </ul>
+      // TODO:
+      <div className="main-container">
+        <PresentationForm />
+      </div>
     </div>
   );
 }
