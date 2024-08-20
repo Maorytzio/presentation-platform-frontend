@@ -8,7 +8,7 @@ function MainRouter() {
     <Router>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/presentation/:id" element={<PresentationPreview />} />
+        <Route path="/presentation/:title" element={<PresentationPreview />} />
       </Routes>
     </Router>
   );

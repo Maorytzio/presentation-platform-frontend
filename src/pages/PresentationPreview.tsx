@@ -15,27 +15,27 @@ interface Presentation {
 }
 
 function PresentationPreview() {
-  const { id } = useParams<{ id: string }>();
+  const { title } = useParams<{ title: string }>();
   const [presentation, setPresentation] = useState<Presentation | null>(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const navigate = useNavigate();
-  const [fetchErr, setFetchErr] = useState(null);
 
   useEffect(() => {
     const fetchPresentation = async () => {
       try {
         const response = await axios.get<Presentation>(
-          `http://localhost:3000/presentations/${id}`
+          `http://localhost:3000/presentations/${title}`
         );
+        console.log(response.data);
+        
         setPresentation(response.data);
-        setFetchErr(null)
       } catch (error) {
         console.error("Error fetching presentation:", error);
       }
     };
 
-    fetchPresentation();
-  }, [id]);
+    (async ()=> await fetchPresentation())()
+  }, [title]);
 
   const handleNextSlide = () => {
     if (presentation && currentSlideIndex < presentation.slides.length - 1) {
