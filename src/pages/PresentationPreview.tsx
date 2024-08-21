@@ -134,12 +134,11 @@ function PresentationPreview() {
   return (
     <div>
       <Card title={presentation.title}>
-      <p>Authors: {presentation?.authors?.join(", ") || "No authors"}</p>
-      <p>
-        Published on: {new Date(presentation.createdAt).toLocaleDateString()}
-      </p>
-</Card>
-
+        <p>Authors: {presentation?.authors?.join(", ") || "No authors"}</p>
+        <p>
+          Published on: {new Date(presentation.createdAt).toLocaleDateString()}
+        </p>
+      </Card>
 
       <div>
         {presentation.slides.length ? (

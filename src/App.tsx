@@ -60,22 +60,34 @@ function App() {
     }
   };
 
-  const handleDeletePresentation = async () => {
-    if (!selectedPresentation) {
-      alert("Please select a presentation to delete.");
-      return;
-    }
-
+  // const handleDeletePresentation = async () => {
+  //   if (!selectedPresentation) {
+  //     alert("Please select a presentation to delete.");
+  //     return;
+  //   }
+  //   try {
+  //     await axios.delete(
+  //       `http://localhost:3000/presentations/${selectedPresentation.title}`
+  //     );
+  //     setPresentations(
+  //       presentations.filter((p) => p.title !== selectedPresentation.title)
+  //     );
+  //     setSelectedPresentation(null);
+  //   } catch (error) {
+  //     console.error("Error deleting presentation:", error);
+  //   }
+  // };
+  const handleDeletePresentation = async (title: string) => {
     try {
-      await axios.delete(
-        `http://localhost:3000/presentations/${selectedPresentation.title}`
-      );
-      setPresentations(
-        presentations.filter((p) => p.title !== selectedPresentation.title)
-      );
-      setSelectedPresentation(null);
+      await axios
+        .delete(`http://localhost:3000/presentations/${title}`)
+        .then(() => {
+          setPresentations(
+            presentations.filter((p) => p.title !== title)
+          );
+        });
     } catch (error) {
-      console.error("Error deleting presentation:", error);
+      console.error("Error deleting slide:", error);
     }
   };
 
@@ -118,12 +130,26 @@ function App() {
             })
           }
         ></Column>
+        <Column
+          header=""
+          style={{ width: "25%" }}
+          body={(rowData) => (
+            <Button
+              icon="pi pi-times"
+              rounded
+              outlined
+              severity="danger"
+              aria-label="Cancel"
+              onClick={() => handleDeletePresentation(rowData.title)}
+            />
+          )}
+        ></Column>
       </DataTable>
       <div style={{ marginBottom: "0rem" }}>
         {/* // TODO: */}
         <Button
-          label="Create Presentation"
-          icon="pi pi-plus"
+          label="Add Presentation"
+          rounded
           onClick={handleCreatePresentation}
         />
       </div>
