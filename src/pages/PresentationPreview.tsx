@@ -1,13 +1,11 @@
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Dropdown } from "primereact/dropdown";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 
 import { Dialog } from "primereact/dialog";
 
 import axios from "axios";
-import Header from "../components/Header";
 import { InputTextarea } from "primereact/inputtextarea";
 
 interface Slide {
