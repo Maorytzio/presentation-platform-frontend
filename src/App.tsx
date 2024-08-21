@@ -60,31 +60,12 @@ function App() {
     }
   };
 
-  // const handleDeletePresentation = async () => {
-  //   if (!selectedPresentation) {
-  //     alert("Please select a presentation to delete.");
-  //     return;
-  //   }
-  //   try {
-  //     await axios.delete(
-  //       `http://localhost:3000/presentations/${selectedPresentation.title}`
-  //     );
-  //     setPresentations(
-  //       presentations.filter((p) => p.title !== selectedPresentation.title)
-  //     );
-  //     setSelectedPresentation(null);
-  //   } catch (error) {
-  //     console.error("Error deleting presentation:", error);
-  //   }
-  // };
   const handleDeletePresentation = async (title: string) => {
     try {
       await axios
         .delete(`http://localhost:3000/presentations/${title}`)
         .then(() => {
-          setPresentations(
-            presentations.filter((p) => p.title !== title)
-          );
+          setPresentations(presentations.filter((p) => p.title !== title));
         });
     } catch (error) {
       console.error("Error deleting slide:", error);
@@ -112,6 +93,13 @@ function App() {
           field="authors"
           header="Authors"
           style={{ width: "25%" }}
+          body={(rowData) => {
+            const authors = rowData.authors;
+            if (authors.length > 3) {
+              return `${authors.slice(0, 3).join(", ")}...`;
+            }
+            return authors.join(", ");
+          }}
         ></Column>
         <Column
           field="slides.length"
@@ -153,16 +141,6 @@ function App() {
           onClick={handleCreatePresentation}
         />
       </div>
-      <ul>
-        {presentations.map((presentation) => (
-          <li
-            key={presentation.title}
-            onClick={() => handlePresentationClick(presentation.title)}
-          >
-            {presentation.title}
-          </li>
-        ))}
-      </ul>
 
       <div className="main-container">
         <PresentationForm />
