@@ -7,6 +7,9 @@ import PresentationForm from "./components/PresentationForm";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
 
 // Define interfaces for the data structure
 interface Slide {
@@ -22,8 +25,17 @@ interface Presentation {
 
 function App() {
   const [presentations, setPresentations] = useState<Presentation[] | []>([]);
-  const [selectedPresentation, setSelectedPresentation] =
-    useState<Presentation | null>(null);
+  // const [selectedPresentation, setSelectedPresentation] =
+  //   useState<Presentation | null>(null);
+  const [displayAddDialog, setDisplayAddDialog] = useState(false);
+  const [newPresentation, setNewPresentation] = useState<Partial<Presentation>>(
+    {
+      title: "",
+      authors: [],
+      slides: [],
+    }
+  );
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,6 +67,7 @@ function App() {
         newPresentation
       );
       setPresentations([...presentations, response.data]);
+      setDisplayAddDialog(false);
     } catch (error) {
       console.error("Error creating presentation:", error);
     }
@@ -74,6 +87,24 @@ function App() {
 
   const handlePresentationClick = (title: string) => {
     navigate(`/presentation/${title}`);
+  };
+
+  const renderAddDialogFooter = () => {
+    return (
+      <div>
+        <Button
+          label="Cancel"
+          icon="pi pi-times"
+          onClick={() => setDisplayAddDialog(false)}
+          className="p-button-text"
+        />
+        <Button
+          label="Add"
+          icon="pi pi-check"
+          onClick={handleCreatePresentation}
+        />
+      </div>
+    );
   };
 
   return (
@@ -133,18 +164,53 @@ function App() {
           )}
         ></Column>
       </DataTable>
-      <div style={{ marginBottom: "0rem" }}>
-        {/* // TODO: */}
+      <div style={{ marginBottom: "1rem" }}>
         <Button
           label="Add Presentation"
           rounded
-          onClick={handleCreatePresentation}
+          onClick={() => setDisplayAddDialog(true)}
         />
       </div>
 
-      <div className="main-container">
-        <PresentationForm />
-      </div>
+      <div className="main-container"></div>
+
+      <Dialog
+        header="Add New Presentation"
+        visible={displayAddDialog}
+        style={{ width: "50vw" }}
+        footer={renderAddDialogFooter()}
+        onHide={() => setDisplayAddDialog(false)}
+      >
+        <div className="p-fluid">
+          <div className="p-field">
+            <label htmlFor="title">Title</label>
+            <InputText
+              id="title"
+              value={newPresentation.title}
+              onChange={(e) =>
+                setNewPresentation({
+                  ...newPresentation,
+                  title: e.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="p-field">
+            <label htmlFor="authors">Authors</label>
+            <InputTextarea
+              id="authors"
+              value={newPresentation.authors?.join(", ")}
+              onChange={(e) =>
+                setNewPresentation({
+                  ...newPresentation,
+                  authors: e.target.value.split(","),
+                })
+              }
+            />
+          </div>
+          {/* //TODO: You can add fields for slides as well */}
+        </div>
+      </Dialog>
     </div>
   );
 }
