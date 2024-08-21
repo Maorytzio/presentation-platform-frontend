@@ -6,6 +6,7 @@ import PresentationForm from "./components/PresentationForm";
 
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import { Button } from "primereact/button";
 
 // Define interfaces for the data structure
 interface Slide {
@@ -21,6 +22,8 @@ interface Presentation {
 
 function App() {
   const [presentations, setPresentations] = useState<Presentation[] | []>([]);
+  const [selectedPresentation, setSelectedPresentation] =
+    useState<Presentation | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,6 +41,43 @@ function App() {
 
     (async () => await fetchPresentations())();
   }, []);
+
+  const handleCreatePresentation = async () => {
+    try {
+      const newPresentation = {
+        title: "New Presentation", // Replace with the desired title or form input
+        authors: [], // Add any default authors if needed
+        slides: [], // Initialize with empty slides
+      };
+
+      const response = await axios.post(
+        "http://localhost:3000/presentations",
+        newPresentation
+      );
+      setPresentations([...presentations, response.data]);
+    } catch (error) {
+      console.error("Error creating presentation:", error);
+    }
+  };
+
+  const handleDeletePresentation = async () => {
+    if (!selectedPresentation) {
+      alert("Please select a presentation to delete.");
+      return;
+    }
+
+    try {
+      await axios.delete(
+        `http://localhost:3000/presentations/${selectedPresentation.title}`
+      );
+      setPresentations(
+        presentations.filter((p) => p.title !== selectedPresentation.title)
+      );
+      setSelectedPresentation(null);
+    } catch (error) {
+      console.error("Error deleting presentation:", error);
+    }
+  };
 
   const handlePresentationClick = (title: string) => {
     navigate(`/presentation/${title}`);
@@ -79,6 +119,14 @@ function App() {
           }
         ></Column>
       </DataTable>
+      <div style={{ marginBottom: "0rem" }}>
+        {/* // TODO: */}
+        <Button
+          label="Create Presentation"
+          icon="pi pi-plus"
+          onClick={handleCreatePresentation}
+        />
+      </div>
       <ul>
         {presentations.map((presentation) => (
           <li
@@ -89,7 +137,7 @@ function App() {
           </li>
         ))}
       </ul>
-      // TODO:
+
       <div className="main-container">
         <PresentationForm />
       </div>
