@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "./components/Header";
 import { useNavigate } from "react-router-dom";
-import PresentationForm from "./components/PresentationForm";
-
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -24,17 +22,13 @@ interface Presentation {
 }
 
 function App() {
-  const [presentations, setPresentations] = useState<Presentation[] | []>([]);
-  // const [selectedPresentation, setSelectedPresentation] =
-  //   useState<Presentation | null>(null);
-  const [displayAddDialog, setDisplayAddDialog] = useState(false);
-  const [newPresentation, setNewPresentation] = useState<Partial<Presentation>>(
-    {
-      title: "",
-      authors: [],
-      slides: [],
-    }
-  );
+  const [presentations, setPresentations] = useState<Presentation[]>([]);
+  const [isDialogVisible, setDialogVisible] = useState(false);
+  const [newPresentation, setNewPresentation] = useState({
+    title: "",
+    authors: "",
+    slides: "",
+  });
 
   const navigate = useNavigate();
 
@@ -44,30 +38,39 @@ function App() {
         const response = await axios.get<Presentation[]>(
           "http://localhost:3000/presentations"
         );
-        console.log(response.data);
         setPresentations(response.data);
       } catch (error) {
         console.error("Error fetching presentations:", error);
       }
     };
 
-    (async () => await fetchPresentations())();
+    fetchPresentations();
   }, []);
 
   const handleCreatePresentation = async () => {
-    try {
-      const newPresentation = {
-        title: "New Presentation", // Replace with the desired title or form input
-        authors: [], // Add any default authors if needed
-        slides: [], // Initialize with empty slides
-      };
+    const slidesArray = newPresentation.slides
+      .split("\n")
+      .filter((slide) => slide.trim() !== "")
+      .map((slide) => ({ content: slide.trim() }));
 
+    const authorsArray = newPresentation.authors
+      .split(",")
+      .map((author) => author.trim());
+
+    const newPresentationData = {
+      title: newPresentation.title,
+      authors: authorsArray,
+      slides: slidesArray,
+    };
+
+    try {
       const response = await axios.post(
         "http://localhost:3000/presentations",
-        newPresentation
+        newPresentationData
       );
-      setPresentations([...presentations, response.data]);
-      setDisplayAddDialog(false);
+      setPresentations([...presentations, response.data.presentation]);
+      setDialogVisible(false);
+      setNewPresentation({ title: "", authors: "", slides: "" });
     } catch (error) {
       console.error("Error creating presentation:", error);
     }
@@ -75,13 +78,10 @@ function App() {
 
   const handleDeletePresentation = async (title: string) => {
     try {
-      await axios
-        .delete(`http://localhost:3000/presentations/${title}`)
-        .then(() => {
-          setPresentations(presentations.filter((p) => p.title !== title));
-        });
+      await axios.delete(`http://localhost:3000/presentations/${title}`);
+      setPresentations(presentations.filter((p) => p.title !== title));
     } catch (error) {
-      console.error("Error deleting slide:", error);
+      console.error("Error deleting presentation:", error);
     }
   };
 
@@ -89,31 +89,23 @@ function App() {
     navigate(`/presentation/${title}`);
   };
 
-  const renderAddDialogFooter = () => {
-    return (
-      <div>
-        <Button
-          label="Cancel"
-          icon="pi pi-times"
-          onClick={() => setDisplayAddDialog(false)}
-          className="p-button-text"
-        />
-        <Button
-          label="Add"
-          icon="pi pi-check"
-          onClick={handleCreatePresentation}
-        />
-      </div>
-    );
+  const openDialog = () => {
+    setDialogVisible(true);
+  };
+
+  const closeDialog = () => {
+    setDialogVisible(false);
+    setNewPresentation({ title: "", authors: "", slides: "" });
   };
 
   return (
     <div className="App">
       <Header />
+
       <DataTable
         value={presentations}
         paginator
-        rows={5}
+        rows={10}
         rowsPerPageOptions={[5, 10, 25, 50]}
         tableStyle={{ minWidth: "50rem" }}
         onRowClick={(e) => handlePresentationClick(e.data.title)}
@@ -125,11 +117,11 @@ function App() {
           header="Authors"
           style={{ width: "25%" }}
           body={(rowData) => {
-            const authors = rowData.authors;
-            if (authors.length > 3) {
-              return `${authors.slice(0, 3).join(", ")}...`;
-            }
-            return authors.join(", ");
+            const authorsDisplay =
+              rowData.authors.length > 3
+                ? `${rowData.authors.slice(0, 3).join(", ")}...`
+                : rowData.authors.join(", ");
+            return <span>{authorsDisplay}</span>;
           }}
         ></Column>
         <Column
@@ -150,36 +142,37 @@ function App() {
           }
         ></Column>
         <Column
-          header=""
-          style={{ width: "25%" }}
           body={(rowData) => (
             <Button
-              icon="pi pi-times"
-              rounded
-              outlined
-              severity="danger"
-              aria-label="Cancel"
-              onClick={() => handleDeletePresentation(rowData.title)}
+              icon="pi pi-trash"
+              className="p-button-danger"
+              onClick={() => {
+                handleDeletePresentation(rowData.title);
+              }}
             />
           )}
         ></Column>
       </DataTable>
-      <div style={{ marginBottom: "1rem" }}>
-        <Button
-          label="Add Presentation"
-          rounded
-          onClick={() => setDisplayAddDialog(true)}
-        />
-      </div>
 
-      <div className="main-container"></div>
+      <div style={{ marginBottom: "1rem" }}>
+        <Button label="Add Presentation" rounded onClick={openDialog} />
+      </div>
 
       <Dialog
         header="Add New Presentation"
-        visible={displayAddDialog}
+        visible={isDialogVisible}
         style={{ width: "50vw" }}
-        footer={renderAddDialogFooter()}
-        onHide={() => setDisplayAddDialog(false)}
+        footer={
+          <>
+            <Button
+              label="Cancel"
+              onClick={closeDialog}
+              className="p-button-text"
+            />
+            <Button label="Add" onClick={handleCreatePresentation} />
+          </>
+        }
+        onHide={closeDialog}
       >
         <div className="p-fluid">
           <div className="p-field">
@@ -196,21 +189,36 @@ function App() {
             />
           </div>
           <div className="p-field">
-            <label htmlFor="authors">Authors</label>
-            <InputTextarea
+            <label htmlFor="authors">Authors (comma-separated)</label>
+            <InputText
               id="authors"
-              value={newPresentation.authors?.join(", ")}
+              value={newPresentation.authors}
               onChange={(e) =>
                 setNewPresentation({
                   ...newPresentation,
-                  authors: e.target.value.split(","),
+                  authors: e.target.value,
                 })
               }
             />
           </div>
-          {/* //TODO: You can add fields for slides as well */}
+          <div className="p-field">
+            <label htmlFor="slides">Slides (one per line)</label>
+            <InputTextarea
+              id="slides"
+              rows={5}
+              value={newPresentation.slides}
+              onChange={(e) =>
+                setNewPresentation({
+                  ...newPresentation,
+                  slides: e.target.value,
+                })
+              }
+            />
+          </div>
         </div>
       </Dialog>
+
+      <div className="main-container"></div>
     </div>
   );
 }
