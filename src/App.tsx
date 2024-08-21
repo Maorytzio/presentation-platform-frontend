@@ -144,8 +144,11 @@ function App() {
         <Column
           body={(rowData) => (
             <Button
-              icon="pi pi-trash"
-              className="p-button-danger"
+              icon="pi pi-times"
+              rounded
+              outlined
+              severity="danger"
+              aria-label="Cancel"
               onClick={() => {
                 handleDeletePresentation(rowData.title);
               }}
